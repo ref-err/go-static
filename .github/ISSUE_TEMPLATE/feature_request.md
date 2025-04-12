@@ -1,6 +1,6 @@
 ---
 name: Feature request
-description: Suggest an improvement or new feature for go-static
+about: Suggest an improvement or new feature for go-static
 title: "[FEATURE] "
 labels: ["enhancement"]
 ---

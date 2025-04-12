@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-description: Report unexpected behavior or crashes in go-static
+about: Report unexpected behavior or crashes in go-static
 title: "[BUG] "
 labels: ["bug"]
 ---

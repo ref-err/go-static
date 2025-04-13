@@ -12,7 +12,7 @@ const dirTemplate = `
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{.Dir}}</title>
+	<title>Index of {{.Dir}}</title>
 	<style>
     	body { font-family: Arial, sans-serif; margin: 40px; }
         .header { font-size: 24px; color: #333; margin-bottom: 20px; }
@@ -38,14 +38,15 @@ const dirTemplate = `
 </html>
 `
 
-// FileInfo struct
+// FileInfo contains basic info about a file.
 type FileInfo struct {
 	Name  string // file name
 	Path  string // file path
 	IsDir bool   // is file a directory
 }
 
-func FileServer(root http.FileSystem) http.Handler { // custom file server handler
+// This is a re-implementation of default http.FileServer handler, written to render custom HTML/CSS.
+func FileServer(root http.FileSystem) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f, err := root.Open(r.URL.Path)
 		if err != nil { // error checking
@@ -74,7 +75,7 @@ func FileServer(root http.FileSystem) http.Handler { // custom file server handl
 		for _, file := range files { // going thru every file
 			fileList = append(fileList, FileInfo{ // adding file to fileList
 				Name:  file.Name(),
-				Path:  filepath.Join(r.URL.Path, file.Name()),
+				Path:  filepath.ToSlash(filepath.Join(r.URL.Path, file.Name())),
 				IsDir: file.IsDir(),
 			})
 		}

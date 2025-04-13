@@ -10,8 +10,10 @@ go install github.com/ref-err/go-static@latest
 
 ## Usage
 ### Command-line arguments:
-- `--port=PORT`: File server port _(default: 8080)_
-- `--root=path/to/dir`: File server root directory _(default: ".")_
+- `--port=PORT`: Server HTTP port (default: `8080`)
+- `--root="path/to/dir"`: Serve files from this directory (default: current directory)
+- `--version`: Prints version of go-static
+- `--open`: Opens file server in default browser
 
 ### Example
 ```bash

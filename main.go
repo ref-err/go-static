@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
+	"github.com/pkg/browser"
 	"github.com/ref-err/go-static/handler"
 )
 
@@ -37,14 +39,15 @@ func init() {
 }
 
 func main() {
-	port := flag.Int("port", 8080, "File server port")             // port from cmd-line args
-	root := flag.String("root", ".", "File server root directory") // root dir from cmd-line args
-	versionFlag := flag.Bool("version", false, "Print version")
+	port := flag.Int("port", 8080, "Server HTTP port")                          // port from cmd-line args
+	root := flag.String("root", ".", "Serve files from this directory")         // root dir from cmd-line args
+	versionFlag := flag.Bool("version", false, "Prints version")                // self-explanatory
+	openFlag := flag.Bool("open", false, "Open file server in default browser") // same ^
 
 	flag.Parse()
 
 	if *versionFlag {
-		fmt.Println("go-static version", version)
+		fmt.Printf("go-static %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
@@ -52,8 +55,16 @@ func main() {
 	fs := http.FileSystem(http.Dir(*root))  // applying root dir to http.FileSystem
 	server.Handler = handler.FileServer(fs) // overriding handler
 
-	log.Println("Running go-static version", version)
-	log.Println("Server listening at localhost:" + fmt.Sprint(*port))
-	log.Println("Root directory: " + *root)
+	log.Printf("Running go-static %s on %s %s\n", version, runtime.GOOS, runtime.GOARCH)
+	log.Println("Server listening at http://localhost:" + fmt.Sprint(*port))
+	log.Println("Root directory:", *root)
+
+	if *openFlag {
+		err := browser.OpenURL("http://localhost:" + fmt.Sprint(*port))
+		if err != nil {
+			log.Fatalln("Failed to open URL: ", err)
+		}
+	}
+
 	log.Fatal(server.ListenAndServe()) // run server
 }

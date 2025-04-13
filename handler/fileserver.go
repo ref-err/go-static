@@ -48,7 +48,9 @@ type FileInfo struct {
 // This is a re-implementation of default http.FileServer handler, written to render custom HTML/CSS.
 func FileServer(root http.FileSystem) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		f, err := root.Open(r.URL.Path)
+		cleanPath := filepath.ToSlash(r.URL.Path)
+
+		f, err := root.Open(cleanPath)
 		if err != nil { // error checking
 			if os.IsPermission(err) {
 				http.Error(w, "Access Denied", http.StatusForbidden)
@@ -75,19 +77,25 @@ func FileServer(root http.FileSystem) http.Handler {
 		for _, file := range files { // going thru every file
 			fileList = append(fileList, FileInfo{ // adding file to fileList
 				Name:  file.Name(),
-				Path:  filepath.ToSlash(filepath.Join(r.URL.Path, file.Name())),
+				Path:  filepath.Join(cleanPath, file.Name()),
 				IsDir: file.IsDir(),
 			})
 		}
 
-		// rendering page
-		tmpl := template.Must(template.New("dir").Parse(dirTemplate))
+		// creating a template out of its content
+		tmpl, err := template.New("dir").Parse(dirTemplate)
+		if err != nil {
+			http.Error(w, "Template Error", http.StatusInternalServerError)
+			return
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		// rendering template
 		tmpl.Execute(w, struct {
 			Dir   string
 			Files []FileInfo
 		}{
-			Dir:   r.URL.Path,
+			Dir:   cleanPath,
 			Files: fileList,
 		})
 	})

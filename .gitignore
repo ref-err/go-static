@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.dylib
+go-static
 
 # Build script
 build.sh

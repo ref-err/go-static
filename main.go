@@ -14,6 +14,7 @@ import (
 
 	"github.com/pkg/browser"
 	"github.com/ref-err/go-static/handler"
+	"github.com/skip2/go-qrcode"
 )
 
 var version = "dev"
@@ -41,10 +42,11 @@ func init() {
 func main() {
 	var startTime = time.Now()
 
-	port := flag.Int("port", 8080, "Server HTTP port")                          // port from cmd-line args
-	root := flag.String("root", ".", "Serve files from this directory")         // root dir from cmd-line args
-	versionFlag := flag.Bool("version", false, "Prints version")                // self-explanatory
-	openFlag := flag.Bool("open", false, "Open file server in default browser") // same ^
+	port := flag.Int("port", 8080, "Server HTTP port")                                      // port from cmd-line args
+	root := flag.String("root", ".", "Serve files from this directory")                     // root dir from cmd-line args
+	versionFlag := flag.Bool("version", false, "Prints version")                            // self-explanatory
+	openFlag := flag.Bool("open", false, "Opens file server in default browser")            // same ^
+	qrFlag := flag.Bool("qr", false, "Prints QR-code that redirects to localhost:YOURPORT") // same again ^
 
 	flag.Parse()
 
@@ -67,6 +69,10 @@ func main() {
 	log.Println("Server listening at http://localhost:" + fmt.Sprint(*port))
 	log.Println("Root directory:", *root)
 
+	if *qrFlag {
+		generateQR(port)
+	}
+
 	if *openFlag {
 		err := browser.OpenURL("http://localhost:" + fmt.Sprint(*port))
 		if err != nil {
@@ -75,4 +81,15 @@ func main() {
 	}
 
 	log.Fatal(server.ListenAndServe()) // run server
+}
+
+func generateQR(port *int) {
+	log.Println("Your QR-code:")
+	qr, err := qrcode.New("http://localhost:"+fmt.Sprint(*port), qrcode.Low)
+	if err != nil {
+		panic(err)
+	}
+	qr.DisableBorder = true
+
+	fmt.Println(qr.ToString(true))
 }

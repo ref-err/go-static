@@ -9,7 +9,7 @@ import (
 )
 
 // HTML template (renders on file server)
-//
+
 //go:embed templates/index.html
 var indexTemplate string
 

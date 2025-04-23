@@ -1,22 +1,29 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var root *string
 
-func RegisterEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc("/_/status", handleStatus)
-	mux.HandleFunc("/_/api/download/", handleDownload)
-}
+func RegisterEndpoints(mux *http.ServeMux, version string, startTime time.Time) {
+	mux.HandleFunc("/_/status", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"version": version,
+			"uptime":  math.Round(time.Since(startTime).Seconds()*10) / 10,
+			"root":    *root,
+		})
 
-func handleStatus(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Not Implemented", http.StatusNotImplemented)
+	})
+	mux.HandleFunc("/_/api/download/", handleDownload)
 }
 
 func handleDownload(w http.ResponseWriter, r *http.Request) {

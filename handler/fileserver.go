@@ -1,6 +1,7 @@
 package handler
 
 import (
+	_ "embed"
 	"html/template"
 	"net/http"
 	"os"
@@ -8,35 +9,9 @@ import (
 )
 
 // HTML template (renders on file server)
-const dirTemplate = `
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Index of {{.Dir}}</title>
-	<style>
-    	body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { font-size: 24px; color: #333; margin-bottom: 20px; }
-        .file-list { list-style: none; padding: 0; }
-        .file-item { padding: 8px; border-bottom: 1px solid #eee; }
-        .file-item:hover { background: #f9f9f9; }
-        .file-link { text-decoration: none; color: #0366d6; }
-        .file-link:hover { text-decoration: underline; }
-        .folder::before { content: "📁 "; }
-        .file::before { content: "📄 "; }
-    </style>
-</head>
-<body>
-	<div class="header">Index of {{.Dir}}</div>
-	<ul class="file-list">
-		{{range .Files}}
-		<li class="file-item">
-			<a href="{{.Path}}" class="file-link {{if .IsDir}}folder{{else}}file{{end}}">{{.Name}}</a>
-		</li>
-		{{end}}
-	</ul>
-</body>
-</html>
-`
+//
+//go:embed templates/index.html
+var indexTemplate string
 
 // FileInfo contains basic info about a file.
 type FileInfo struct {
@@ -83,7 +58,7 @@ func FileServer(root http.FileSystem) http.Handler {
 		}
 
 		// creating a template out of its content
-		tmpl, err := template.New("dir").Parse(dirTemplate)
+		tmpl, err := template.New("dir").Parse(indexTemplate)
 		if err != nil {
 			http.Error(w, "Template Error", http.StatusInternalServerError)
 			return

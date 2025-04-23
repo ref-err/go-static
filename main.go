@@ -21,7 +21,7 @@ var version = "dev"
 // creating http server
 var server = &http.Server{
 	Addr:           ":8080",
-	Handler:        http.FileServer(http.Dir(".")),
+	Handler:        nil,
 	ReadTimeout:    10 * time.Second,
 	WriteTimeout:   10 * time.Second,
 	MaxHeaderBytes: 1 << 20,
@@ -46,14 +46,20 @@ func main() {
 
 	flag.Parse()
 
+	handler.SetRoot(root)
+
 	if *versionFlag {
 		fmt.Printf("go-static %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
 		os.Exit(0)
 	}
 
+	mux := http.NewServeMux()
+
+	handler.RegisterEndpoints(mux)          // registering endpoints
 	server.Addr = ":" + fmt.Sprint(*port)   // applying port to server
 	fs := http.FileSystem(http.Dir(*root))  // applying root dir to http.FileSystem
-	server.Handler = handler.FileServer(fs) // overriding handler
+	mux.Handle("/", handler.FileServer(fs)) // using mux to handle everything
+	server.Handler = mux                    // overriding handler
 
 	log.Printf("Running go-static %s on %s %s\n", version, runtime.GOOS, runtime.GOARCH)
 	log.Println("Server listening at http://localhost:" + fmt.Sprint(*port))

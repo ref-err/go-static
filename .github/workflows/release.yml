@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -22,7 +24,11 @@ jobs:
         GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=${{ github.ref_name }}" -o "dist/go-static-linux64"
         GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=${{ github.ref_name }}" -o "dist/go-static-win64.exe"
         GOOS=darwin GOARCH=arm64 go build -ldflags "-X main.version=${{ github.ref_name }}" -o "dist/go-static-macos"
-      
+    
+    - name: "Generate changelog"
+      run: |
+        git log --pretty=format:"- %s (%h)" HEAD...$(git describe --tags --abbrev=0 HEAD^) > CHANGELOG.md || echo "Initial release" > CHANGELOG.md
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
@@ -30,4 +36,8 @@ jobs:
           dist/go-static-linux64
           dist/go-static-win64.exe
           dist/go-static-macos
+          CHANGELOG.md
+        generate_release_notes: true
+        body_path: CHANGELOG.md
+      env:
         token: ${{ secrets.GITHUB_TOKEN }}

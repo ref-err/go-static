@@ -18,6 +18,9 @@ build.sh
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# go-static config
+go-static.yaml
+
 # Build directory
 build
 

@@ -3,6 +3,7 @@ package handler
 import (
 	_ "embed"
 	"html/template"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,9 +16,10 @@ var indexTemplate string
 
 // FileInfo contains basic info about a file.
 type FileInfo struct {
-	Name  string // file name
-	Path  string // file path
-	IsDir bool   // is file a directory
+	Name  string  // file name
+	Path  string  // file path
+	Size  float64 // file size
+	IsDir bool    // is file a directory
 }
 
 // This is a re-implementation of default http.FileServer handler, written to render custom HTML/CSS.
@@ -53,6 +55,7 @@ func FileServer(root http.FileSystem) http.Handler {
 			fileList = append(fileList, FileInfo{ // adding file to fileList
 				Name:  file.Name(),
 				Path:  filepath.Join(cleanPath, file.Name()),
+				Size:  math.Round((float64(file.Size())/1024.0)*10) / 10,
 				IsDir: file.IsDir(),
 			})
 		}

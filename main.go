@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/pkg/browser"
+	"github.com/ref-err/go-static/config"
 	"github.com/ref-err/go-static/handler"
 	"github.com/skip2/go-qrcode"
 )
@@ -42,13 +43,26 @@ func init() {
 func main() {
 	var startTime = time.Now()
 
-	port := flag.Int("port", 8080, "Server HTTP port")                                      // port from cmd-line args
-	root := flag.String("root", ".", "Serve files from this directory")                     // root dir from cmd-line args
-	versionFlag := flag.Bool("version", false, "Prints version")                            // self-explanatory
-	openFlag := flag.Bool("open", false, "Opens file server in default browser")            // same ^
-	qrFlag := flag.Bool("qr", false, "Prints QR-code that redirects to localhost:YOURPORT") // same again ^
+	port := flag.Int("port", 8080, "Server HTTP port")                                    // port from cmd-line args
+	root := flag.String("root", ".", "Serve files from this directory")                   // root dir from cmd-line args
+	versionFlag := flag.Bool("version", false, "Prints version")                          // self-explanatory
+	openFlag := flag.Bool("open", false, "Opens file server in default browser")          // open browser
+	qrFlag := flag.Bool("qr", false, "Show QR-code that redirects to localhost:YOURPORT") // show qr
+	configPath := flag.String("config-file", "", "Path to the config file")               // path to config file
 
 	flag.Parse()
+
+	if *configPath != "" {
+		config, err := config.LoadConfig(*configPath)
+		if err != nil {
+			log.Fatalf("Error loading config file: %v", err)
+		}
+
+		root = &config.Root
+		port = &config.Port
+		openFlag = &config.Open
+		qrFlag = &config.Qr
+	}
 
 	handler.SetRoot(root)
 
